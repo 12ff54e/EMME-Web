@@ -40,7 +40,7 @@ const pipelineLayout = device.createPipelineLayout({
     bindGroupLayouts: [bindGroupLayout],
 });
 
-const compiledShaders = await compileShader(device, './shader/Voronoi.wgsl');
+const compiledShaders = await compileShader(device, '/shader/emme.wgsl');
 const computePipeline = device.createComputePipeline({
     layout: pipelineLayout,
     compute: {
@@ -85,13 +85,12 @@ const bindGroup = device.createBindGroup({
     entries: [{ binding: 0, resource: { buffer: hostDataUniformBuffer } }],
 });
 
-function draw(site_num: number) {
+function draw() {
     // record commands
     const encoder = device.createCommandEncoder();
     const computePass = encoder.beginComputePass();
     computePass.setBindGroup(0, bindGroup);
     computePass.setPipeline(computePipeline);
-    computePass.dispatchWorkgroups(Math.ceil(site_num / 64));
     computePass.end();
 
     const pass = encoder.beginRenderPass({
@@ -126,15 +125,7 @@ async function compileShader(device: GPUDevice, ...shaders_src_url: string[]) {
     });
 }
 
-let site_num = 1024;
-document.body.addEventListener('keypress', (e) => {
-    e.preventDefault();
-    if (e.key == 'f') {
-        draw(site_num);
-    }
-});
-
-draw(site_num);
+draw();
 
 // ensure this file is treated as a module by linter
 export {};
