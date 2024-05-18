@@ -40,7 +40,7 @@ const pipelineLayout = device.createPipelineLayout({
     bindGroupLayouts: [bindGroupLayout],
 });
 
-const compiledShaders = await compileShader(device, '/shader/emme.wgsl');
+const compiledShaders = await compileShader(device, 'shader/emme.wgsl');
 const computePipeline = device.createComputePipeline({
     layout: pipelineLayout,
     compute: {
