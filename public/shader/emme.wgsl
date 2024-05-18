@@ -68,7 +68,7 @@ fn bessel_i1(z: c_f32) -> c_f32 {
 }
 
 struct HostData {
-    time_stamp: u32,
+    time_stamp: f32, // performance.now()
     canvas_dim: vec2<f32>,
 }
 
@@ -93,6 +93,8 @@ fn fragment_main(@builtin(position) frag_coord: vec4<f32>) -> @location(0) vec4<
     uv.y = 1. - uv.y; // y direction of frag_coord is pointing downward
 
     let z = bessel_i0(6. * (uv - 0.5));
-    let hue = fract(atan2(z.y, z.x) / (radians(360)) + 1.);
+    let time = host_data.time_stamp / 1000.;
+    let hue_speed = 0.2;
+    let hue = fract(atan2(z.y, z.x) / (radians(360)) + 1. + hue_speed * time);
     return vec4<f32>(hsl2rgb(vec3<f32>(hue, 0.7, 0.7)), 1.);
 }

@@ -88,10 +88,10 @@ const bindGroup = device.createBindGroup({
 function draw() {
     // record commands
     const encoder = device.createCommandEncoder();
-    const computePass = encoder.beginComputePass();
-    computePass.setBindGroup(0, bindGroup);
-    computePass.setPipeline(computePipeline);
-    computePass.end();
+    // const computePass = encoder.beginComputePass();
+    // computePass.setBindGroup(0, bindGroup);
+    // computePass.setPipeline(computePipeline);
+    // computePass.end();
 
     const pass = encoder.beginRenderPass({
         colorAttachments: [
@@ -108,9 +108,13 @@ function draw() {
     pass.draw(4);
     pass.end();
 
+    const time_stamp = new Float32Array([performance.now()]);
+    device.queue.writeBuffer(hostDataUniformBuffer, 0, time_stamp);
     // the recorded commands are stored into commandBuffer
     // then submitted to device
     device.queue.submit([encoder.finish()]);
+
+    requestAnimationFrame(draw);
 }
 
 async function compileShader(device: GPUDevice, ...shaders_src_url: string[]) {
@@ -125,7 +129,7 @@ async function compileShader(device: GPUDevice, ...shaders_src_url: string[]) {
     });
 }
 
-draw();
+requestAnimationFrame(draw);
 
 // ensure this file is treated as a module by linter
 export {};
