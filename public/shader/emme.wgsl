@@ -1,3 +1,10 @@
+// color space transformation
+
+fn hsl2rgb(c: vec3<f32>) -> vec3<f32> {
+    let rgb = clamp(abs((c.x * 6.0 + vec3<f32>(0.0, 4.0, 2.0)) % 6.0 - 3.0) - 1.0, vec3<f32>(0.0), vec3<f32>(1.0));
+    return c.z + c.y * (rgb - 0.5) * (1.0 - abs(2.0 * c.z - 1.0));
+}
+
 // complex
 
 alias c_f32 = vec2<f32>;
@@ -45,9 +52,9 @@ fn bessel_i_helper(z: c_f32) -> vec4<f32> {
         y_tmp = c_div(f32(2 * n) * y0, z) + y1;
         y1 = y0;
         y0 = y_tmp;
-        mu += f32(2 * select(1, 1 - 2 * (n % 2), z.x < 0)) * y0;
+        mu += f32(2 * select(1, 1 - 2 * (n % 2), z.x < 0)) * y1;
     }
-    mu = c_mul(c_exp(select(-z, z, z.x < 0)), (mu - y0));
+    mu = c_mul(c_exp(select(-z, z, z.x < 0)), (mu + y0));
 
     return vec4<f32>(c_div(y0, mu), c_div(y1, mu));
 }
@@ -83,8 +90,9 @@ fn vertex_main(@builtin(vertex_index) id: u32) -> @builtin(position) vec4<f32> {
 fn fragment_main(@builtin(position) frag_coord: vec4<f32>) -> @location(0) vec4<f32> {
     const AA_WIDTH = 0.004f;
     var uv = frag_coord.xy / host_data.canvas_dim;
-    let x = uv.x * 10.;
-    let y = 2815.72 * (1. - uv.y);
-    let white = vec3(1.);
-    return vec4<f32>(select(white, vec3(uv, 0), bessel_i0(c_f32(x, 0)).x > y), 1.);
+    uv.y = 1. - uv.y; // y direction of frag_coord is pointing downward
+
+    let z = bessel_i0(6. * (uv - 0.5));
+    let hue = fract(atan2(z.y, z.x) / (radians(360)) + 1.);
+    return vec4<f32>(hsl2rgb(vec3<f32>(hue, 0.7, 0.7)), 1.);
 }
